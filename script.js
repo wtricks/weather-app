@@ -72,21 +72,21 @@ window.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
-            navigator.permissions.query({ name: "geolocation" }).then((permissionStatus) => {
+            // navigator.permissions.query({ name: "geolocation" }).then((permissionStatus) => {
                 /**
                  * If user has denied permission to view location
                  */
-                if (permissionStatus.state === 'denied') {
-                    errorElement.textContent = `Location permission denied by the user.`
-                } 
+                // if (permissionStatus.state === 'denied') {
+                //     errorElement.textContent = `Location permission denied by the user.`
+                // } 
                 
                 /**
                  * Prompt has shown
                  */
-                else {
+                // else {
                     useUserLocation();
-                }
-            });
+            //     }
+            // });
         } else {
             errorElement.textContent = "Geolocation is not supported by your browser.";
         }
