@@ -2,7 +2,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fetch-data").addEventListener("click", () => {
         document.getElementById("fetch-data").className = 'loading';
         
-        const errorElement = document.querySelector(".top p");
+        const errorElement = document.querySelector(".home-page p");
 
         // convert timzone given by weather api into string
         const secondsToTimeZoneString = (offsetSeconds) => {
@@ -24,66 +24,59 @@ window.addEventListener("DOMContentLoaded", () => {
          * We'll use `GeoLocation` API.
          */
         if ("geolocation" in navigator) {
-            navigator.permissions.query({ name: "geolocation" }).then((permissionStatus) => {
-                
-                /**
-                 * If user has already granted permission to view location
-                 */
-                if (permissionStatus.state === 'granted') {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        
-                        /**
-                         * Now we have location of user.
-                         * Let's fetch weather data and also show location in DOM.
-                         */
-                        document.getElementById("latitude").textContent = `Lat: ${latitude}`;
-                        document.getElementById("longitude").textContent = `Lat: ${longitude}`;
+            const useUserLocation = () => {
+                console.log("Fetching data")
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
                     
-                        /**
-                         * We are using here `iframe` for showing google map
-                         * AIzaSyALJd4lJaW_3pOn-XeE5Bg0Be_FO5u9X0M
-                         */
-                        const iframe = document.createElement("iframe");
-                        iframe.style.cssText = "height:100%;width: 100%;border: 0;";
-                        iframe.frameBorder = "0";
-                        iframe.src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
-                        document.querySelector(".map").appendChild(iframe);
-        
-                        /**
-                         * Fetch weather information                                          
-                        */
-
-                        Promise.all([
-                            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=cb38692bd004c473f1b609a257eb5b37`)
-                                .then(e => e.json())
-                        ])
-                        .then(data => {
-                            data = data[0];
-
-                            document.body.classList.add('main');
-                            document.body.classList.remove('home');
-
-                            document.querySelector("#location b").textContent = data.name;
-                            document.querySelector("#speed b").textContent = (data.wind.speed*3.6) + "kmph"; 
-                            document.querySelector("#humidity b").textContent = data.main.humidity;
-                            document.querySelector("#timezone b").textContent = secondsToTimeZoneString(data.timezone);
-                            document.querySelector("#pressure b").textContent = data.main.pressure;
-                            document.querySelector("#direction b").textContent = degreesToWindDirection(data.wind.deg)
-                            document.querySelector("#uv-index b");
-                            document.querySelector("#feels b").textContent = data.main.feels_like;
-                        })        
-                        .catch(e => {
-                            errorElement.textContent = e.message;
-                        });
-                    });
-                } 
+                    /**
+                     * Now we have location of user.
+                     * Let's fetch weather data and also show location in DOM.
+                     */
+                    document.getElementById("latitude").textContent = `Lat: ${latitude}`;
+                    document.getElementById("longitude").textContent = `Lat: ${longitude}`;
                 
+                    /**
+                     * We are using here `iframe` for showing google map
+                     * AIzaSyALJd4lJaW_3pOn-XeE5Bg0Be_FO5u9X0M
+                     */
+                    const iframe = document.createElement("iframe");
+                    iframe.style.cssText = "height:100%;width: 100%;border: 0;";
+                    iframe.frameBorder = "0";
+                    iframe.src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
+                    document.querySelector(".map").appendChild(iframe);
+    
+                    /**
+                     * Fetch weather information                                          
+                    */
+
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=cb38692bd004c473f1b609a257eb5b37`)
+                            .then(e => e.json())
+                    .then(data => {
+                        document.body.classList.add('main');
+                        document.body.classList.remove('home');
+
+                        document.querySelector("#location b").textContent = data.name;
+                        document.querySelector("#speed b").textContent = (data.wind.speed*3.6) + "kmph"; 
+                        document.querySelector("#humidity b").textContent = data.main.humidity;
+                        document.querySelector("#timezone b").textContent = secondsToTimeZoneString(data.timezone);
+                        document.querySelector("#pressure b").textContent = data.main.pressure;
+                        document.querySelector("#direction b").textContent = degreesToWindDirection(data.wind.deg)
+                        document.querySelector("#uv-index b");
+                        document.querySelector("#feels b").textContent = data.main.feels_like;
+                    })        
+                    .catch(e => {
+                        errorElement.textContent = e.message;
+                    });
+                });
+            }
+
+            navigator.permissions.query({ name: "geolocation" }).then((permissionStatus) => {
                 /**
                  * If user has denied permission to view location
                  */
-                else if (permissionStatus.state === 'denied') {
+                if (permissionStatus.state === 'denied') {
                     errorElement.textContent = `Location permission denied by the user.`
                 } 
                 
@@ -91,7 +84,7 @@ window.addEventListener("DOMContentLoaded", () => {
                  * Prompt has shown
                  */
                 else {
-                    document.getElementById("fetch-data").className = '';
+                    useUserLocation();
                 }
             });
         } else {
